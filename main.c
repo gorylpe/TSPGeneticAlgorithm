@@ -3,7 +3,7 @@
 #include <time.h>
 #include "util.h"
 #include "genetic.h"
-#include "startingcycle.h"
+#include "startingsolution.h"
 
 void mainProgram(FILE* input, FILE* output, FILE* error){
     int n;
@@ -23,14 +23,14 @@ void mainProgram(FILE* input, FILE* output, FILE* error){
     //time for end app and i/o
     timeLimit -= CLOCKS_PER_SEC * n / 10000;
 
-    int* cycle = malloc(n * sizeof(int));
-    //firstCycleAscending(n, cycle);
-    firstCycleRandom(n, cycle);
+    //forced to be even
+    int populationSize = POPULATION_SIZE % 2 == 0 ? POPULATION_SIZE : POPULATION_SIZE + 1;
 
-    double* cycleLength = malloc(sizeof(double));
-    *cycleLength = cycleLen(n, cycle, E);
+    int** population = malloc(populationSize * sizeof(int*));
+    double* populationLength = malloc(populationSize * sizeof(double));
+    firstPopulation(n, population, populationSize, populationLength, E);
 
-    genetic(n, E, cycle, cycleLength, n * averageEdgeLength(n, E), timeLimit);
+    genetic(n, E, population, populationSize, populationLength, timeLimit);
 
     fprintf(output, "%f\n", *cycleLength);
     int start;

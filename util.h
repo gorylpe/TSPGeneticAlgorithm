@@ -6,6 +6,8 @@
 //save memory
 #define E(x,y) ((x) > (y) ? E[(x)][(y)] : E[(y)][(x)])
 
+#define POPULATION_SIZE 100
+
 static inline void swap(int* a, int* b){
     int c = *a;
     *a = *b;

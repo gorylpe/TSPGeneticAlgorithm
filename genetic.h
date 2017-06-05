@@ -7,6 +7,6 @@
 #include "swap2opt.h"
 #include "math.h"
 #include "util.h"
-#include "startingcycle.h"
+#include "startingsolution.h"
 
-int genetic(int n, float **E, int** population, double** populationLength, int timeLimit);
+int genetic(int n, float **E, int** population, int populationSize, double* populationLength, int timeLimit);
