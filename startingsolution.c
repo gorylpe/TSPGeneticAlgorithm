@@ -57,6 +57,7 @@ void firstCycleNearestInsertion(int n, int *cycle, float **E) {
 }
 
 void firstPopulation(int n, int** population, int populationSize, double* populationLength, float** E){
+    const int mutationsNumber = 3;
     int* cycle = malloc(n * sizeof(int));
     firstCycleNearestInsertion(n, cycle, E);
     population[0] = cycle;
@@ -71,13 +72,14 @@ void firstPopulation(int n, int** population, int populationSize, double* popula
             firstCycleNearestInsertion(n, cycle, E);
 
         //number of mutations
-        int k = rand() % 10;
+        int k = rand() % mutationsNumber;
         for(int j = 0; j < k; ++j){
             //random mutation
-            int b = rand() % (n - 1) + 1;
+            int b = rand() % (n - 2) + 1;
             int a = rand() % b;
-            swap(&cycle[a], &cycle[b]);
+            swap2Opt(n, cycle, a, b);
         }
+        population[i] = cycle;
     }
     for(int i = 0; i < populationSize; ++i){
         populationLength[i] = cycleLen(n, population[i], E);

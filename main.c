@@ -32,20 +32,15 @@ void mainProgram(FILE* input, FILE* output, FILE* error){
 
     genetic(n, E, population, populationSize, populationLength, timeLimit);
 
-    fprintf(output, "%f\n", *cycleLength);
+    int* cycle = population[0];
+
+    fprintf(output, "%lf\n", populationLength[0]);
     int start;
     for (start = 0; start < n && cycle[start] != 0; ++start);
     for (int i = 0; i < n; ++i) {
         fprintf(error, "%d\n", cycle[(start + i)%n] + 1);
     }
     fprintf(error, "%d\n", cycle[start] + 1);
-
-    for (int i = 0; i < n; ++i) {
-        free(E[i]);
-    }
-    free(E);
-    free(cycle);
-    free(cycleLength);
 }
 
 int main(int argc, char* argv[]) {

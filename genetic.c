@@ -1,7 +1,7 @@
 #include "genetic.h"
-#define DEBUG
+//#define DEBUG
 
-inline int countNeighbors(bool freeVertices[], int neighbors[][4], int v){
+static inline int countNeighbors(bool freeVertices[], int neighbors[][4], int v){
     int neighborsNumber = 0;
     for(int i = 0; i < 4; ++i){
         if(freeVertices[neighbors[v][i]])
@@ -91,7 +91,7 @@ void singleEdgeCrossover(int n, int** population, int populationFrom1, int popul
 
 }
 
-void edgeCrossover(int n, int** population, const int populationSize){
+void edgeCrossoverOneWithNext(int n, int **population, const int populationSize){
     const int populationSizeHalf = populationSize / 2;
     singleEdgeCrossover(n, population, n - 1, 0, populationSizeHalf);
     for(int i = 1; i < populationSizeHalf; ++i){
@@ -99,38 +99,125 @@ void edgeCrossover(int n, int** population, const int populationSize){
     }
 }
 
+void edgeCrossoverEliteMost(int n, int **population, const int populationSize){
+    const int populationSizeForty = populationSize / 10 * 4;
+    for(int i = 0; i < 10; ++i){
+        singleEdgeCrossover(n, population, 0, i + 1, populationSizeForty + i);
+    }
+
+    for(int i = 0; i < 10; ++i){
+        singleEdgeCrossover(n, population, 1, i + 2, populationSizeForty + 10 + i);
+    }
+
+    for(int i = 0; i < 10; ++i){
+        singleEdgeCrossover(n, population, 2, i + 3, populationSizeForty + 20 + i);
+    }
+
+    for(int i = 0; i < 3; ++i){
+        singleEdgeCrossover(n, population, 3, i + 4, populationSizeForty + 30 + i);
+    }
+
+    for(int i = 0; i < 2; ++i){
+        singleEdgeCrossover(n, population, 4, i + 5, populationSizeForty + 33 + i);
+    }
+
+    for(int i = 0; i < 25; ++i){
+        singleEdgeCrossover(n, population, 5 + i, 5 + i + 1, populationSizeForty + 35 + i);
+    }
+}
+
 //p/q chances to do single mutation, ie. 1/2 means 50%
 void randomMutations(int n, int** population, const int populationSize, int p, int q){
-    const int populationSizeHalf = populationSize / 2;
+    const int populationSizeQuarter = populationSize / 4;
 
-    for(int i = populationSizeHalf; i < populationSize; ++i){
+    for(int i = populationSizeQuarter; i < populationSize; ++i){
         if(rand() % q < p){
             //random mutation
             int b = rand() % (n - 2) + 1;
             int a = rand() % b;
-            int al = a > 0 ? a - 1 : n - 1;
-            int ar = a < n - 1 ? a + 1 : 0;
-            int bl = b > 0 ? b - 1 : n - 1;
-            int br = b < n - 1 ? b + 1 : 0;
-
             swap2Opt(n, population[i], a, b);
         }
     }
 }
 
-void measurePopulationLengths(int n, float** E, int **population, int populationSize, double *populationLength) {
+void measurePopulationLengths(int n, float** E, int **population, const int populationSize, double *populationLength) {
     for(int i = 0; i < populationSize; ++i){
         populationLength[i] = cycleLen(n, population[i], E);
     }
 }
 
-int genetic(int n, float **E, int** population, int populationSize, double* populationLength, int timeLimit){
+int partition(int left, int right, int** population, double* populationLength) {
+    double pivot = populationLength[left];
 
-    while(clock() < timeLimit){
-        edgeCrossover(n, population, populationSize);
-        randomMutations(n, population, populationSize, 1, 2);
+    int i = left - 1;
+    int j = right + 1;
+
+    while(true){
+        do{
+            ++i;
+        } while(populationLength[i] < pivot);
+
+        do{
+            --j;
+        } while(populationLength[j] > pivot);
+
+        if(i >= j)
+            return j;
+
+        swapD(&populationLength[i], &populationLength[j]);
+        swapArr(&population[i], &population[j]);
+    }
+}
+
+void quicksortPopulation(int left, int right, int **population, double *populationLength){
+    while(right > left){
+        int mid = partition(left, right, population, populationLength);
+
+        if((mid - left) < (right - mid)){
+            quicksortPopulation(left, mid - 1, population, populationLength);
+            left = mid + 1;
+        } else {
+            quicksortPopulation(mid + 1, right, population, populationLength);
+            right = mid - 1;
+        }
+    }
+}
+
+int genetic(int n, float **E, int** population, const int populationSize, double* populationLength, int timeLimit){
+#ifdef DEBUG
+    printf("Start");
+#endif
+    int maxGenerations = 5000;
+    int generation = 0;
+    while(clock() < timeLimit && generation < maxGenerations){
+        edgeCrossoverEliteMost(n, population, populationSize);
+        randomMutations(n, population, populationSize, 1, 1);
         measurePopulationLengths(n, E, population, populationSize, populationLength);
-        sortPopulation(n, population, populationSize, populationLength);
+        quicksortPopulation(0, populationSize - 1, population, populationLength);
+
+#ifdef DEBUG
+        printf("Best cycle length:%lf\n", populationLength[0]);
+        double avg = 0.0;
+        for(int i = 0; i < populationSize; ++i){
+            avg += populationLength[i];
+        }
+        avg /= populationSize;
+        printf("Average cycle length:%lf\n", avg);
+        avg = 0.0;
+        for(int i = 0; i < populationSize / 2; ++i){
+            avg += populationLength[i];
+        }
+        avg /= populationSize;
+        printf("Average of half cycle length:%lf\n", avg);
+        printf("\n");
+#endif
+        ++generation;
+        double avg = 0.0;
+        for(int i = 0; i < populationSize; ++i){
+            avg += populationLength[i];
+        }
+        avg /= populationSize;
+        printf("%lf, ", avg);
     }
 #ifdef DEBUG
     printf("\n");

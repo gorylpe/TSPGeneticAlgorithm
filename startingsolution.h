@@ -1,6 +1,7 @@
 #pragma once
 #include <string.h>
 #include "util.h"
+#include "swap2opt.h"
 
 void firstCycleAscending(int n, int* cycle);
 

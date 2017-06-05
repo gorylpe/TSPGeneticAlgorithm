@@ -14,6 +14,18 @@ static inline void swap(int* a, int* b){
     *b = c;
 }
 
+static inline void swapArr(int** a, int** b){
+    int* c = *a;
+    *a = *b;
+    *b = c;
+}
+
+static inline void swapD(double* a, double* b){
+    double c = *a;
+    *a = *b;
+    *b = c;
+}
+
 static inline int int_pow(int base, int exp){
     int result = 1;
     while(exp){
