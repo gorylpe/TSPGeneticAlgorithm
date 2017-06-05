@@ -7,8 +7,8 @@ set(SOURCE_FILES
         main.c
         genetic.c
         genetic.h
-        startingcycle.c
-        startingcycle.h
+        startingsolution.c
+        startingsolution.h
         swap2opt.c
         swap2opt.h
         util.c
