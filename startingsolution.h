@@ -11,4 +11,6 @@ void firstCycleNearestNeighbor(int n, int *cycle, float **E);
 
 void firstCycleNearestInsertion(int n, int *cycle, float **E);
 
-void firstPopulation(int n, int** population, int populationSize, double* populationLength, float** E);
+void firstPopulationPredef(int n, int **population, int populationSize, double *populationLength, float **E);
+
+void firstPopulation1nnRestRandom(int n, int **population, int populationSize, double *populationLength, float **E);

@@ -56,7 +56,7 @@ void firstCycleNearestInsertion(int n, int *cycle, float **E) {
     }
 }
 
-void firstPopulation(int n, int** population, int populationSize, double* populationLength, float** E){
+void firstPopulationPredef(int n, int **population, int populationSize, double *populationLength, float **E){
     const int mutationsNumber = 3;
     int* cycle = malloc(n * sizeof(int));
     firstCycleNearestInsertion(n, cycle, E);
@@ -72,7 +72,7 @@ void firstPopulation(int n, int** population, int populationSize, double* popula
             firstCycleNearestInsertion(n, cycle, E);
 
         //number of mutations
-        int k = rand() % mutationsNumber;
+        int k = rand() % mutationsNumber + 1;
         for(int j = 0; j < k; ++j){
             //random mutation
             int b = rand() % (n - 2) + 1;
@@ -81,6 +81,21 @@ void firstPopulation(int n, int** population, int populationSize, double* popula
         }
         population[i] = cycle;
     }
+    for(int i = 0; i < populationSize; ++i){
+        populationLength[i] = cycleLen(n, population[i], E);
+    }
+}
+
+void firstPopulation1nnRestRandom(int n, int **population, int populationSize, double *populationLength, float **E){
+    int* cycle = malloc(n * sizeof(int));
+    firstCycleNearestInsertion(n, cycle, E);
+    population[0] = cycle;
+    for(int i = 1; i < populationSize; ++i){
+        cycle = malloc(n * sizeof(int));
+        firstCycleRandom(n, cycle);
+        population[i] = cycle;
+    }
+
     for(int i = 0; i < populationSize; ++i){
         populationLength[i] = cycleLen(n, population[i], E);
     }
