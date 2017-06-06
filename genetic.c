@@ -1,5 +1,7 @@
 #include "genetic.h"
 //#define DEBUG
+//#define PLOT_AVG
+//#define PLOT_BEST
 
 static inline int countNeighbors(bool freeVertices[], int neighbors[][4], int v){
     int neighborsNumber = 0;
@@ -93,7 +95,7 @@ void singleEdgeCrossover(int n, int** population, int populationFrom1, int popul
 
 void edgeCrossoverOneWithNext(int n, int **population, const int populationSize){
     const int populationSizeHalf = populationSize / 2;
-    singleEdgeCrossover(n, population, n - 1, 0, populationSizeHalf);
+    singleEdgeCrossover(n, population, populationSize - 1, 0, populationSizeHalf);
     for(int i = 1; i < populationSizeHalf; ++i){
         singleEdgeCrossover(n, population, i - 1, i, populationSizeHalf + i);
     }
@@ -135,6 +137,54 @@ void randomMutations(int n, int** population, const int populationSize, int p, i
             //random mutation
             int b = rand() % (n - 2) + 1;
             int a = rand() % b;
+            swap2Opt(n, population[i], a, b);
+        }
+    }
+}
+
+void improvingMutations(int n, float** E, int** population, const int populationSize){
+    for(int i = 0; i < populationSize; ++i){
+        int a = -1;
+        int b = -1;
+        double min = INFINITY;
+        for(int j = 1; j < n - 1; ++j){
+            for(int k = 0; k < j; ++k){
+                int al = k > 1 ? k - 1 : n - 1;
+                int br = j + 1;
+                double diff = cycleLen2OptDiff(population[i], E, al, k, j, br);
+                if(diff < min){
+                    min = diff;
+                    a = k;
+                    b = j;
+                }
+            }
+        }
+        if(a != -1){
+            swap2Opt(n, population[i], a, b);
+        }
+    }
+}
+
+void improvingMutationsToFirstImprovement(int n, float** E, int** population, const int populationSize){
+    for(int i = 0; i < populationSize; ++i){
+        int a = -1;
+        int b = -1;
+        double min = INFINITY;
+        for(int j = 1; j < n - 1; ++j){
+            for(int k = 0; k < j; ++k){
+                int al = k > 1 ? k - 1 : n - 1;
+                int br = j + 1;
+                double diff = cycleLen2OptDiff(population[i], E, al, k, j, br);
+                if(diff < min){
+                    min = diff;
+                    a = k;
+                    b = j;
+                }
+                if(min < 0)
+                    break;
+            }
+        }
+        if(a != -1){
             swap2Opt(n, population[i], a, b);
         }
     }
@@ -187,11 +237,18 @@ int genetic(int n, float **E, int** population, const int populationSize, double
 #ifdef DEBUG
     printf("Start");
 #endif
-    int maxGenerations = 5000;
+    int maxGenerations = 1000;
     int generation = 0;
     while(clock() < timeLimit && generation < maxGenerations){
+        ++generation;
+
+        //edgeCrossoverOneWithNext(n, population, populationSize);
         edgeCrossoverEliteMost(n, population, populationSize);
-        randomMutations(n, population, populationSize, 1, 1);
+
+        //randomMutations(n, population, populationSize, 1, 1);
+        //improvingMutations(n, E, population, populationSize);
+        improvingMutationsToFirstImprovement(n, E, population, populationSize);
+
         measurePopulationLengths(n, E, population, populationSize, populationLength);
         quicksortPopulation(0, populationSize - 1, population, populationLength);
 
@@ -211,13 +268,22 @@ int genetic(int n, float **E, int** population, const int populationSize, double
         printf("Average of half cycle length:%lf\n", avg);
         printf("\n");
 #endif
-        ++generation;
-        double avg = 0.0;
+#ifdef PLOT_AVG
+        double avg2 = 0.0;
         for(int i = 0; i < populationSize; ++i){
-            avg += populationLength[i];
+            avg2 += populationLength[i];
         }
-        avg /= populationSize;
-        printf("%lf, ", avg);
+        avg2 /= populationSize;
+        printf("%lf, ", avg2);
+#endif
+#ifdef PLOT_BEST
+        printf("%lf, ", populationLength[0]);
+#endif
+#ifdef PLOT_POPULATION
+        for(int i = 0; i < populationSize; ++i){
+                printf("%lf, ", populationLength[i]);
+        }
+#endif
     }
 #ifdef DEBUG
     printf("\n");
