@@ -63,20 +63,20 @@ void singleEdgeCrossover(int n, int** population, int populationFrom1, int popul
             ++usedVertices;
         } else {
             //choose neighbor with minimal number of neighbors
-            int minNeighborsVerticeIt = -1;
-            int minNeighborsVerticeSize = INT_MAX;
+            int minNeighborsVertexIt = -1;
+            int minNeighborsVertexSize = INT_MAX;
             for(int i = 0; i < 4; ++i){
                 if(freeVertices[neighbors[v][i]]){
                     neighborsNumber = countNeighbors(freeVertices, neighbors, neighbors[v][i]);
-                    if(neighborsNumber < minNeighborsVerticeSize){
-                        minNeighborsVerticeSize = neighborsNumber;
-                        minNeighborsVerticeIt = i;
+                    if(neighborsNumber < minNeighborsVertexSize){
+                        minNeighborsVertexSize = neighborsNumber;
+                        minNeighborsVertexIt = i;
                     }
                 }
             }
 
             //append vertex to child
-            v = neighbors[v][minNeighborsVerticeIt];
+            v = neighbors[v][minNeighborsVertexIt];
             population[populationTo][usedVertices] = v;
             //find it in free vertices array
             for(int i = usedVertices; i < n; ++i){

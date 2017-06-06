@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <stdbool.h>
+#include <limits.h>
 #include "swap2opt.h"
 #include "math.h"
 #include "util.h"
